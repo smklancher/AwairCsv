@@ -4,9 +4,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using AwairCsv;
 using CsvHelper;
 using Newtonsoft.Json;
+using AwairApi;
 
 namespace QuickType
 {
@@ -23,17 +23,6 @@ namespace QuickType
 
         [JsonIgnore]
         public List<FlatData> FlatData => Data.Select(x => new FlatData(x)).ToList();
-
-        public void CreateDeviceCsv(string folder)
-        {
-            var file = Path.Combine(folder, Device.Name + ".csv");
-            Console.WriteLine($"Writing CSV data from device ({Device.DeviceUuid}) to {file}");
-            using (var writer = new StreamWriter(file))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-            {
-                csv.WriteRecords(FlatData);
-            }
-        }
 
         public void SetDevice(DevicesDevice device)
         {

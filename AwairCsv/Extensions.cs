@@ -1,44 +1,38 @@
-﻿using System;
+﻿using CsvHelper;
+using QuickType;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
-using CsvHelper;
+using System.Linq;
+using AwairApi;
 
 namespace AwairCsv
 {
-    internal class MultiDeviceRawData
+    public static class Extensions
     {
-        public MultiDeviceRawData(List<QuickType.RawAirData> rawAirDatas)
-        {
-            RawAirData = rawAirDatas;
-        }
-
-        public List<QuickType.RawAirData> RawAirData { get; }
-
-        public void CreateCsv(string folder)
+        public static void CreateCsv(this MultiDeviceRawData raw, string folder)
         {
             foreach (QuickType.Comp sensorType in Enum.GetValues(typeof(QuickType.Comp)))
             {
-                CreateCsv(folder, sensorType);
+                CreateCsv(raw, folder, sensorType);
             }
         }
 
-        public void CreateCsv(string folder, QuickType.Comp sensorType)
+        public static void CreateCsv(this MultiDeviceRawData raw, string folder, QuickType.Comp sensorType)
         {
             var file = Path.Combine(folder, $"Multi-{sensorType}.csv");
 
             Console.WriteLine($"Writing {sensorType} data from all devices to {file}");
 
             using var writer = new StreamWriter(file);
-            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            using var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
 
-            var names = RawAirData.Select(x => x.Device.Name).ToList();
+            var names = raw.RawAirData.Select(x => x.Device.Name).ToList();
             names.Sort();
             WriteHeader(csv, names);
 
-            var data = RawAirData.SelectMany(x => x.FlatData);
+            var data = raw.RawAirData.SelectMany(x => x.FlatData);
 
             // Write the rows
             foreach (var item in data)
@@ -72,7 +66,18 @@ namespace AwairCsv
             }
         }
 
-        private void WriteHeader(CsvWriter csv, List<string> names)
+        public static void CreateDeviceCsv(this RawAirData raw, string folder)
+        {
+            var file = Path.Combine(folder, raw.Device.Name + ".csv");
+            Console.WriteLine($"Writing CSV data from device ({raw.Device.DeviceUuid}) to {file}");
+            using (var writer = new StreamWriter(file))
+            using (var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(raw.FlatData);
+            }
+        }
+
+        private static void WriteHeader(CsvWriter csv, List<string> names)
         {
             var headers = new[] { "Timestamp" }.Concat(names).ToList();
 

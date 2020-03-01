@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace AwairCsv
+namespace AwairApi
 {
-    internal class AwairService
+    public class AwairService
     {
         private const string BaseUrl = "https://developer-apis.awair.is/v1/users/self/";
         private readonly HttpClient client;

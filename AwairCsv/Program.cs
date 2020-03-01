@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CsvHelper;
 using System.Linq;
 using System.Collections.Generic;
+using AwairApi;
 
 namespace AwairCsv
 {
@@ -17,25 +18,6 @@ namespace AwairCsv
         private static HttpClient client;
 
         private static QuickType.Devices devices;
-
-        private static async Task DoWork(DateTime endtime)
-        {
-            await Init();
-            var from = endtime.AddHours(-1.0);
-
-            Console.WriteLine($"Getting raw data from {from.ToLocalTime()} to {endtime.ToLocalTime()}");
-            Console.WriteLine($"UTC times: {from} to {endtime}");
-
-            var calls = devices.DevicesDevices.Select(x => api.GetDeviceRawAirDataAsync(x, from, endtime, true));
-            var raws = (await Task.WhenAll(calls)).ToList();
-            foreach (var r in raws)
-            {
-                r.CreateDeviceCsv(Environment.CurrentDirectory);
-            }
-
-            var multidata = new MultiDeviceRawData(raws);
-            multidata.CreateCsv(Environment.CurrentDirectory);
-        }
 
         private static string GetToken()
         {
